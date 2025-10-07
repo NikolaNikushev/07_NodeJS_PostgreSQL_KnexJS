@@ -35,10 +35,6 @@ export abstract class Repository<T> implements BaseRepository<T>{
         throw new Error("Not implemented")
     }
 
-    list(whereClause = {}): Promise<T[]> {
-        return this.qb.select('*').where(whereClause);
-    }
-
     create(data: T): Promise<T> {
         return this.qb.insert(data).returning('*').then(rows => rows[0]);
     }
