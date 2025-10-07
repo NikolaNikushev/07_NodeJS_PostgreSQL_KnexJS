@@ -1,21 +1,14 @@
 import Router from "@koa/router";
-import { User, userSchema } from "./userSchema";
+import { User, userSchema } from "./models/userSchema";
 import { DefaultContext, DefaultState, ParameterizedContext } from "koa";
-import { db } from "../config/knex";
-import { Book } from "./bookSchema";
+import { Book } from "./models/bookSchema";
 
 const router = new Router({
   prefix: "/users",
 });
 
 router.get("/", async (ctx) => {
-  ctx.body = await db<User[]>("users")
-    .join("users_books", "users.id", "users_books.user_id")
-    .join("books", "users_books.book_id", "books.id")
-    .select("users.*", db.raw("json_agg(books.*) as books"))
-    .groupBy("users.id")
-    .orderBy("users.id", "asc")
-
+  ctx.body = await ctx.db.users.usersWithBooks();
 });
 
 router.post(
@@ -42,11 +35,8 @@ router.post(
     }
 
     try {
-      const insertQuery = await db<User>("users")
-        .insert(newUserData.data)
-        .returning("*");
-      const data = insertQuery[0];
-      if (!insertQuery || !data) {
+      const data = await ctx.db.users.create(newUserData.data);
+      if (!data) {
         ctx.status = 500;
         ctx.body = {
           error: "Could not insert data",
@@ -94,25 +84,22 @@ router.put(
       return;
     }
 
-    const user = await db<User>("users").where({ id: userId }).first();
-    if (!user) {
-      ctx.status = 404;
-      ctx.body = { error: "User not found", details: [] };
-      return;
-    }
+      const user = await ctx.db.users.findOne(userId);
+      if (!user) {
+          ctx.status = 404;
+          ctx.body = { error: "User not found", details: [] };
+          return;
+      }
 
-    const book = await db<Book>("books").where({ id: bookId }).first();
-    if (!book) {
-      ctx.status = 404;
-      ctx.body = { error: "Book not found", details: [] };
-      return;
-    }
+      const book = await ctx.db.books.findOne(bookId);
+      if (!book) {
+          ctx.status = 404;
+          ctx.body = { error: "Book not found", details: [] };
+          return;
+      }
 
     try {
-      await db("users_books").insert({
-        user_id: userId,
-        book_id: bookId,
-      });
+        await ctx.db.usersBooks.create({ user_id: userId, book_id: bookId });
       ctx.body = {book, user};
     } catch (error) {
       ctx.status = 500;

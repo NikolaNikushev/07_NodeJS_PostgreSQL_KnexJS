@@ -44,9 +44,10 @@ You can also have a pre-defined set of data in your database for development pur
 
 Expand the Koa API and load data from the PostgreSQL database using Knex:
 
-- Add a book to a user
-- Remove a book from a user
 - Load a single users and all their books
+- Remove a book from a user
+- Add a new book
+- Update a book name
 - Find a book by name
   - Can you list all the users that have a book written by "J.R.R. Tolkien" 
 
@@ -55,6 +56,7 @@ Expand the Koa API and load data from the PostgreSQL database using Knex:
 - A Book by the same author should not be added twice in the books table
 - How can you handle the same user being created twice?
 - How can you fix the "author" name changing for a book?
+  - Consider that if we update 1 book, the name of the author is also relevant for the other books written by them
 - Optional: 
-  - How could you use a post processing response request to always hide the password of the user?
+  - How could you use a post processing response request to always hide the password of the user or omit it when retrieving the result?
   - Can you change password for a user and make it protected? (hint checkout bcrypt)
