@@ -1,7 +1,7 @@
 import {Knex} from "knex";
 
 interface Writer<T> {
-    create(item: T): Promise<T>
+    create(item: Omit<T,'id'>): Promise<T>
     update(id: string, item: Partial<T>): Promise<boolean>
     delete(id: string): Promise<boolean>
 }
@@ -35,7 +35,7 @@ export abstract class Repository<T> implements BaseRepository<T>{
         throw new Error("Not implemented")
     }
 
-    create(data: T): Promise<T> {
+    create(data: Omit<T,'id'>): Promise<T> {
         return this.qb.insert(data).returning('*').then(rows => rows[0]);
     }
 
